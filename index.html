@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Slide to Play">
-<meta property="og:title" content="Slide to Play">
+<meta name="apple-mobile-web-app-title" content="My Old iPhone">
+<meta property="og:title" content="My Old iPhone">
 <meta property="og:description" content="The games from your 2013 phone. Beat my score on the exact same run.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>Slide to Play</title>
+<title>My Old iPhone</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -303,7 +303,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
         </div>
         <div class="notif">
           <img id="notifIcon" alt="">
-          <div><b>Slide to Play</b><span id="notifText">Flap, Slice, Hop, Jet and more are back, plus Snake and friends in the Retro folder.</span></div>
+          <div><b>My Old iPhone</b><span id="notifText">Flap, Slice, Hop, Jet and more are back, plus Snake and friends in the Retro folder.</span></div>
           <small>now</small>
         </div>
         <div class="lock-spacer"></div>
@@ -337,7 +337,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
     <div class="alert" id="alert" hidden></div>
     <div class="sheet-wrap" id="install" hidden>
       <div class="sheet" role="dialog" aria-labelledby="installTitle">
-        <div class="sheet-head"><img id="installIcon" alt=""><div><b id="installTitle">Get Slide to Play</b><span id="installSub">Opens full screen, works offline, no app store needed.</span></div></div>
+        <div class="sheet-head"><img id="installIcon" alt=""><div><b id="installTitle">Get My Old iPhone</b><span id="installSub">Opens full screen, works offline, no app store needed.</span></div></div>
         <div id="installBody"></div>
         <button class="btn primary" id="installGo" hidden>Install</button>
         <button class="btn" data-close-install>Not now</button>
@@ -1705,7 +1705,20 @@ function lcdIcon(c,s,rows){const g=c.createLinearGradient(0,0,0,s);g.addColorSto
   const n=rows.length,cell=s*.8/n,o=s*.1;c.fillStyle='#26331f';for(let r=0;r<n;r++)for(let k=0;k<rows[r].length;k++)if(rows[r][k]==='#')c.fillRect(o+k*cell,o+r*cell,cell*.88,cell*.88);}
 const ICONS={};
 const ICON_DRAW={
-  app(c,s){const g=c.createLinearGradient(0,0,s,s);g.addColorStop(0,'#ff5f8f');g.addColorStop(1,'#ffb347');c.fillStyle=g;c.fillRect(0,0,s,s);c.fillStyle='#fff';c.beginPath();c.moveTo(s*.38,s*.28);c.lineTo(s*.74,s*.5);c.lineTo(s*.38,s*.72);c.closePath();c.lineJoin='round';c.lineWidth=s*.08;c.strokeStyle='#fff';c.stroke();c.fill();},
+  /* App icon: a glossy old handset showing a tiny home screen. ps shrinks the phone for Android's round-masked icon. */
+  app(c,s,ps){ps=ps||1;const g=c.createLinearGradient(0,0,0,s);g.addColorStop(0,'#173f5c');g.addColorStop(.55,'#3d6e86');g.addColorStop(1,'#f39a5d');c.fillStyle=g;c.fillRect(0,0,s,s);
+    c.fillStyle='rgba(255,226,170,.35)';for(const [x,y,r] of [[.16,.2,.05],[.84,.3,.07],[.2,.8,.06],[.86,.84,.05]]){c.beginPath();c.arc(s*x,s*y,s*r,0,TAU);c.fill();}
+    const pw=s*.46*ps,ph=s*.78*ps,px=(s-pw)/2,py=(s-ph)/2;
+    rr(c,px+s*.02,py+s*.03,pw,ph,pw*.17);c.fillStyle='rgba(0,0,0,.35)';c.fill();
+    rr(c,px,py,pw,ph,pw*.17);const rim=c.createLinearGradient(px,0,px+pw,0);rim.addColorStop(0,'#9ea2aa');rim.addColorStop(.5,'#e9ebef');rim.addColorStop(1,'#8d9199');c.fillStyle=rim;c.fill();
+    const t=s*.011*ps;rr(c,px+t,py+t,pw-2*t,ph-2*t,pw*.15);c.fillStyle='#101114';c.fill();
+    const sx=px+pw*.09,sy=py+ph*.15,sw=pw*.82,sh=ph*.68,sg=c.createLinearGradient(0,sy,0,sy+sh);sg.addColorStop(0,'#1d4f73');sg.addColorStop(1,'#d88a5a');c.fillStyle=sg;c.fillRect(sx,sy,sw,sh);
+    const cols=['#ff5d6c','#ffb238','#3fc68a','#4f9dff','#a173ff','#ff7ac6','#ffd23f','#5ec2c9','#86d36f','#ff8a5c','#9fd0ff','#ffffff'],cw=sw/3,b=cw*.62;
+    cols.forEach((col,i)=>{const r=i/3|0,k=i%3;rr(c,sx+k*cw+(cw-b)/2,sy+sh*.05+r*cw*.95,b,b,b*.26);c.fillStyle=col;c.fill();});
+    c.fillStyle='rgba(255,255,255,.3)';c.fillRect(sx,sy+sh*.85,sw,sh*.15);
+    rr(c,s/2-pw*.14,py+ph*.068,pw*.28,Math.max(1,ph*.016),ph*.008);c.fillStyle='#3a3c42';c.fill();
+    c.beginPath();c.arc(s/2,py+ph*.915,pw*.085,0,TAU);c.strokeStyle='#4a4c52';c.lineWidth=Math.max(1,s*.009*ps);c.stroke();
+    c.beginPath();c.moveTo(0,0);c.lineTo(s,0);c.lineTo(s,s*.34);c.quadraticCurveTo(s*.5,s*.5,0,s*.44);c.closePath();c.fillStyle='rgba(255,255,255,.16)';c.fill();},
   flap(c,s){const g=c.createLinearGradient(0,0,0,s);g.addColorStop(0,'#4fc0ef');g.addColorStop(1,'#c8efff');c.fillStyle=g;c.fillRect(0,0,s,s);c.fillStyle='rgba(255,255,255,.9)';cloud(c,s*.1,s*.22,s/110);c.fillStyle='#8fd27a';c.beginPath();c.arc(s*.3,s*1.08,s*.45,0,TAU);c.fill();const u=s/220;hedge(c,s*.76,-5,s*.24,s*.32,u,true);hedge(c,s*.76,s*.74,s*.24,s*.3,u,false);drawBee(c,s*.4,s*.52,s*.17,-.25,.3);},
   slice(c,s){c.fillStyle='#9b6337';c.fillRect(0,0,s,s);c.fillStyle='#8a552e';c.fillRect(s*.33,0,s*.34,s);c.fillStyle='#4a2a12';c.fillRect(s*.33-1,0,2,s);c.fillRect(s*.67-1,0,2,s);
     drawHalf(c,{x:s*.53,y:s*.555,r:s*.33,rot:-.5,T:FRUITS[0],side:1});drawHalf(c,{x:s*.47,y:s*.445,r:s*.33,rot:-.5,T:FRUITS[0],side:-1});
@@ -1963,10 +1976,10 @@ const SHARE_SVG='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d=
 const ADD_SVG='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const DOTS_SVG='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg>';
 const stepList=list=>`<ol class="steps">${list.filter(Boolean).map(s=>`<li>${s}</li>`).join('')}</ol>`;
-const IOS_STEPS=()=>stepList([iosNotSafari?'Open this page in <b>Safari</b>':null,`Tap the <b>Share</b> button${SHARE_SVG} in the toolbar`,`Scroll down and tap <b>Add to Home Screen</b>${ADD_SVG}`,'Tap <b>Add</b>. Slide to Play appears with your apps.']);
-const AND_STEPS=()=>stepList([andInApp?'Open this page in <b>Chrome</b>':null,`Tap the menu${DOTS_SVG} in your browser`,'Tap <b>Install app</b> or <b>Add to Home screen</b>','Tap <b>Install</b>. Slide to Play appears with your apps.']);
+const IOS_STEPS=()=>stepList([iosNotSafari?'Open this page in <b>Safari</b>':null,`Tap the <b>Share</b> button${SHARE_SVG} in the toolbar`,`Scroll down and tap <b>Add to Home Screen</b>${ADD_SVG}`,'Tap <b>Add</b>. My Old iPhone appears with your apps.']);
+const AND_STEPS=()=>stepList([andInApp?'Open this page in <b>Chrome</b>':null,`Tap the menu${DOTS_SVG} in your browser`,'Tap <b>Install app</b> or <b>Add to Home screen</b>','Tap <b>Install</b>. My Old iPhone appears with your apps.']);
 function openInstall(nudge){const w=$('#install'),body=$('#installBody'),go=$('#installGo');$('#installIcon').src=ICONS.app;
-  $('#installTitle').textContent=nudge?'Keep it on your phone':'Get Slide to Play';
+  $('#installTitle').textContent=nudge?'Keep it on your phone':'Get My Old iPhone';
   go.hidden=true;$('#iosArrow').hidden=true;w.classList.remove('ios');
   /* Android and desktop Chrome: tapping Get App goes straight to the real install prompt */
   if(deferredPrompt&&!nudge){runInstall();return;}
