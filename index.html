@@ -105,7 +105,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 
 /* Home screen */
 .home{padding-top:4cqmin}
-.pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pages{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .pages::-webkit-scrollbar{display:none}
 .grid{flex:0 0 100%;scroll-snap-align:start;align-content:start;display:grid;grid-template-columns:repeat(4,1fr);row-gap:5cqmin;padding:2cqmin 3cqmin;box-sizing:border-box}
 .folder-grid{display:grid}
@@ -2272,14 +2272,19 @@ function renderHome(){
   const app=(id,label,cls,badge)=>`<button class="app ${cls}" data-id="${id}" aria-label="${esc(label)}"><span class="icon"><img src="${ICONS[id]}" alt="">${badge?`<span class="badge">${badge}</span>`:''}</span><span class="label">${esc(label)}</span></button>`;
   const badge=m=>challenge&&challenge.id===m.id?'1':'';
   $('#folderGrid').innerHTML=META.filter(m=>m.retro).map(m=>app(m.id,m.label,'',badge(m))).join('');
-  /* Home pages of 16 icons, swipe sideways between them like the real thing. The Retro folder sits after the first 15 games. */
-  const list=META.filter(m=>!m.retro).map(m=>app(m.id,m.label,'',badge(m)));list.splice(15,0,app('retro','Retro','',challenge&&META_BY[challenge.id]&&META_BY[challenge.id].retro?'1':''));
-  const pages=[];for(let i=0;i<list.length;i+=16)pages.push(list.slice(i,i+16));const pg=$('#pages'),keep=pg.scrollLeft;
+  /* Home pages: as many rows of 4 as fit the screen, swipe sideways between pages. The Retro folder is always the last icon. */
+  const list=META.filter(m=>!m.retro).map(m=>app(m.id,m.label,'',badge(m)));list.push(app('retro','Retro','',challenge&&META_BY[challenge.id]&&META_BY[challenge.id].retro?'1':''));
+  const per=4*homeRows,pages=[];for(let i=0;i<list.length;i+=per)pages.push(list.slice(i,i+per));const pg=$('#pages'),keep=pg.scrollLeft;
   pg.innerHTML=pages.map((p,i)=>`<div class="grid"${i===0?' id="grid"':''}>${p.join('')}</div>`).join('');pg.scrollLeft=keep;
+  requestAnimationFrame(fitHome);
   $('#dots').innerHTML=pages.map((_,i)=>`<i${i===0?' class="on"':''}></i>`).join('');pageDots();
   if(challenge){const el=pg.querySelector(`.app[data-id="${META_BY[challenge.id]&&META_BY[challenge.id].retro?'retro':challenge.id}"]`);if(el){const g=el.closest('.grid');requestAnimationFrame(()=>{pg.scrollLeft=g.offsetLeft;});}}
   $('#dock').innerHTML=`<button class="app" data-id="sound" aria-label="Sound ${soundOn?'on':'off'}"><span class="icon"><img src="${ICONS[soundOn?'sound':'mute']}" alt=""></span><span class="label">Sound ${soundOn?'On':'Off'}</span></button>`+app('scores','Scores','','')+(isStandalone()?'':app('install','Get App','',''));
 }
+let homeRows=4;
+function fitHome(){const pg=$('#pages'),g=pg&&pg.querySelector('.grid'),a=g&&g.querySelector('.app');if(!a||!pg.clientHeight)return;const cs=getComputedStyle(g),gap=parseFloat(cs.rowGap)||0,pad=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
+  const rows=Math.max(3,Math.floor((pg.clientHeight-pad+gap)/(a.offsetHeight+gap)));if(rows!==homeRows){homeRows=rows;renderHome();}}
+window.addEventListener('resize',()=>{if(!home.hidden)requestAnimationFrame(fitHome);});
 function pageDots(){const pg=$('#pages'),n=pg.children.length,i=Math.round(pg.scrollLeft/Math.max(1,pg.clientWidth));[...$('#dots').children].forEach((d,k)=>d.classList.toggle('on',k===Math.min(n-1,i)));}
 function renderScores(){$('#scoreList').innerHTML=META.map(m=>{const b=getBest(m.id),k=tierOf(m.id,b),n=store.get('stp-plays-'+m.id,0);
   return `<li><img src="${ICONS[m.id]}" alt=""><span class="nm">${m.label}<small>${n} ${n===1?'play':'plays'} · ${goalsDone(m.id).length}/3 goals</small></span><i class="medal m${k}" title="${MEDAL_NAMES[k]||'No medal yet'}"></i><b>${b}</b></li>`;}).join('');
