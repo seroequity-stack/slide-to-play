@@ -240,6 +240,19 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .group li:first-child{border-top:0}
 .group img{width:8cqmin;height:8cqmin;border-radius:22%}
 .group b{margin-left:auto;color:var(--cell-detail);font-weight:400;font-variant-numeric:tabular-nums}
+.setg{margin-bottom:5cqmin}
+.setg li{min-height:7cqmin}
+.setg li.tap{cursor:pointer}.setg li.tap:active{background:#e4ecf7}
+.setg li .val{margin-left:auto;color:var(--cell-detail);font-weight:400;font-size:4cqmin}
+.setg li .chev{margin-left:auto;color:#a3a7ae;font-size:5cqmin;font-weight:400}
+.setg li.danger{color:#d63a2f;justify-content:center}
+.setg li.danger.armed{background:#d63a2f;color:#fff}
+.setg img.si{width:7cqmin;height:7cqmin;border-radius:22%}
+.setg p.note{margin:2cqmin 3cqmin 0;font-size:3.3cqmin;color:var(--cell-head);text-shadow:0 1px 0 rgba(255,255,255,.8);line-height:1.4}
+.sw{margin-left:auto;flex:none;position:relative;width:15cqmin;height:7cqmin;border-radius:3.5cqmin;background:linear-gradient(#e2e3e6,#fdfdfd);box-shadow:inset 0 .4cqmin .8cqmin rgba(0,0,0,.25);border:1px solid #b9bcc2;transition:background .2s}
+.sw::after{content:"";position:absolute;top:.2cqmin;left:.2cqmin;width:6.4cqmin;height:6.4cqmin;border-radius:50%;background:linear-gradient(#fff,#e8e8e8);box-shadow:0 .3cqmin .6cqmin rgba(0,0,0,.35);transition:transform .2s}
+.sw.on{background:linear-gradient(#1f6fd6,#4d9cf0);border-color:#1a5fb8}
+.sw.on::after{transform:translateX(7.9cqmin)}
 .foot{text-align:center;color:var(--cell-head);font-size:3.4cqmin;margin-top:3cqmin;text-shadow:0 1px 0 rgba(255,255,255,.8)}
 
 /* Motion */
@@ -343,6 +356,10 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
         <div class="stage" id="stage"><canvas id="cv" aria-label="Game board"></canvas><div class="overlay" id="overlay" hidden></div></div>
       </section>
 
+      <section id="settings" class="view scores" hidden aria-label="Settings">
+        <header class="navbar"><button class="back" data-home>Home</button><h1>Settings</h1><span></span></header>
+        <div class="table-wrap" id="setWrap"></div>
+      </section>
       <section id="scores" class="view scores" hidden aria-label="Scores">
         <header class="navbar"><button class="back" data-home>Home</button><h1>Scores</h1><span></span></header>
         <div class="table-wrap"><h3>Your best</h3><ul class="group" id="scoreList"></ul><p class="foot">Best scores are saved in this browser.</p></div>
@@ -385,7 +402,8 @@ const TAU=Math.PI*2, rand=(a,b)=>a+R()*(b-a), fx=(a,b)=>a+Math.random()*(b-a), c
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}let a=h>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const newSeed=()=>(Math.random().toString(36).slice(2)+'000000').slice(0,6);
 const GF='"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif';
-const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sysReduced=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+let reduced=(()=>{try{const v=localStorage.getItem('stp-reduce');return v==null?sysReduced:JSON.parse(v);}catch(e){return sysReduced;}})();
 function rr(c,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const getBest=id=>store.get('stp-best-'+id,0), setBest=(id,v)=>store.set('stp-best-'+id,v);
@@ -569,7 +587,7 @@ function checkGoals(){if(state!=='playing'||!curId||!GOALS[curId])return;const d
     if(v>=g[1]){done.push(i);changed=true;api.pop(W/2,H*.62,'Goal complete!','#7cffb2',1.1);tone(988,.1,'square',.04);setTimeout(()=>tone(1319,.18,'square',.04),110);}});
   if(changed)store.set('stp-goals-'+curId,done);}
 function goalsHTML(id){const G=GOALS[id];if(!G)return'';const d=goalsDone(id);return `<ul class="goals">${G.map((g,i)=>`<li class="${d.includes(i)?'done':''}"><i></i>${esc(g[2])}</li>`).join('')}</ul>`;}
-function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+function buzz(ms){if(!store.get('stp-vibe',true))return;try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
 /* Floating text: "+16", "3 fruit combo", "New best!" */
 function drawPops(c,dt){
   for(const p of pops)p.t+=dt;pops=pops.filter(p=>p.t<1.1);const u=Math.min(W,H)/400;
@@ -589,7 +607,7 @@ const api={score:0,
   stat(k,n=1){runStats[k]=(runStats[k]||0)+n;checkGoals();},
   peak(k,v){if(v>(runStats[k]||0)){runStats[k]=v;checkGoals();}},
   pop(x,y,text,col='#fff',size=1){if(pops.length<24)pops.push({x,y,text,col,size,t:0});},
-  over(){ if(state!=='playing')return; state='over'; R=Math.random; buzz(60); $('#pauseBtn').hidden=true; if(curId!=='doubles'&&!reduced)shake=1; const prev=getBest(curId), s=this.score; lastScore=s; if(s>prev)setBest(curId,s); const id=curId; setTimeout(()=>{ if(curId===id&&state==='over') overlayOver(s,prev); },650); }
+  over(){ if(state!=='playing')return; state='over'; R=Math.random; buzz(60); $('#pauseBtn').hidden=true; if(curId!=='doubles'&&!reduced&&store.get('stp-shake',true))shake=1; const prev=getBest(curId), s=this.score; lastScore=s; if(s>prev)setBest(curId,s); const id=curId; setTimeout(()=>{ if(curId===id&&state==='over') overlayOver(s,prev); },650); }
 };
 
 function makeWood(w,h){
@@ -1851,7 +1869,7 @@ const Spike={
     this.gen();api.set(Math.floor(p.x));this.music(dt);this.cam(dt);this.stepParts(dt);},
   music(dt){const beat=60/128;this.beatT+=dt;this.pulse=Math.max(0,this.pulse-dt*3);
     while(this.beatT>=beat/2){this.beatT-=beat/2;const n=this.beatN++,on=n%2===0,bar=(n>>1)%16,notes=[0,0,7,0,5,0,3,5,0,0,7,0,10,7,5,3];
-      if(on){tone(120,.16,'sine',.07,-70);this.pulse=1;tone(55*Math.pow(2,notes[bar]/12),.2,'triangle',.035);}else noise(.04,.02,7000);}},
+      const mu=store.get('stp-music',true);if(on){this.pulse=1;if(mu){tone(120,.16,'sine',.07,-70);tone(55*Math.pow(2,notes[bar]/12),.2,'triangle',.035);}}else if(mu)noise(.04,.02,7000);}},
   cam(dt){const p=this.p,ship=this.mode==='ship';this.camX=p.x-W*.27/this.B;const ty=ship?-1.23:Math.max(0,p.y-4.2);this.camY+=(ty-this.camY)*Math.min(1,dt*(ship?6:4));},
   stepParts(dt){for(const q of this.parts){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy-=6*dt;q.life-=dt;}this.parts=this.parts.filter(q=>q.life>0);},
   idle(dt){this.t+=dt;this.pulse=Math.max(0,this.pulse-dt*3);if(this.dead)this.dead.t+=dt;else this.cam(1);this.stepParts(dt);},
@@ -2224,6 +2242,9 @@ const ICON_DRAW={
   install(c,s){const g=c.createLinearGradient(0,0,0,s);g.addColorStop(0,'#5fb6ff');g.addColorStop(1,'#1f6fd6');c.fillStyle=g;c.fillRect(0,0,s,s);
     c.strokeStyle='#fff';c.lineWidth=s*.09;c.lineCap='round';c.lineJoin='round';c.beginPath();c.moveTo(s*.5,s*.2);c.lineTo(s*.5,s*.6);c.moveTo(s*.32,s*.44);c.lineTo(s*.5,s*.62);c.lineTo(s*.68,s*.44);c.stroke();
     c.beginPath();c.moveTo(s*.24,s*.66);c.lineTo(s*.24,s*.78);c.lineTo(s*.76,s*.78);c.lineTo(s*.76,s*.66);c.stroke();},
+  settings(c,s){const g=c.createLinearGradient(0,0,0,s);g.addColorStop(0,'#c9ced6');g.addColorStop(1,'#7d848f');c.fillStyle=g;c.fillRect(0,0,s,s);
+    const cx=s/2,cy=s/2;c.save();c.translate(cx,cy);for(const [R1,R2,n,col] of [[s*.36,s*.29,16,'#4b525d'],[s*.2,s*.15,10,'#6b737f']]){c.beginPath();for(let i=0;i<n*2;i++){const a=i*Math.PI/n,r=i%2?R2:R1;c.lineTo(Math.cos(a-Math.PI/n/2)*r,Math.sin(a-Math.PI/n/2)*r);c.lineTo(Math.cos(a+Math.PI/n/2)*r,Math.sin(a+Math.PI/n/2)*r);}c.closePath();c.fillStyle=col;c.fill();}
+    c.beginPath();c.arc(0,0,s*.24,0,TAU);c.strokeStyle='#3a4049';c.lineWidth=s*.02;c.stroke();c.beginPath();c.arc(0,0,s*.07,0,TAU);c.fillStyle='#c9ced6';c.fill();c.restore();},
   sound(c,s){const g=c.createLinearGradient(0,0,0,s);g.addColorStop(0,'#d7dbe0');g.addColorStop(1,'#8e959e');c.fillStyle=g;c.fillRect(0,0,s,s);c.fillStyle='#3b4049';c.beginPath();c.moveTo(s*.2,s*.4);c.lineTo(s*.34,s*.4);c.lineTo(s*.52,s*.24);c.lineTo(s*.52,s*.76);c.lineTo(s*.34,s*.6);c.lineTo(s*.2,s*.6);c.closePath();c.fill();c.strokeStyle='#3b4049';c.lineWidth=s*.055;c.lineCap='round';for(const r of [.14,.25]){c.beginPath();c.arc(s*.52,s*.5,s*r,-.8,.8);c.stroke();}},
   mute(c,s){ICON_DRAW.sound(c,s);c.fillStyle='rgba(215,219,224,1)';c.fillRect(s*.6,s*.2,s*.32,s*.6);c.strokeStyle='#d63a2f';c.lineWidth=s*.065;c.lineCap='round';c.beginPath();c.moveTo(s*.62,s*.38);c.lineTo(s*.84,s*.62);c.moveTo(s*.84,s*.38);c.lineTo(s*.62,s*.62);c.stroke();},
   scores(c,s){const g=c.createRadialGradient(s/2,s*.4,s*.1,s/2,s/2,s*.8);g.addColorStop(0,'#3d8a4f');g.addColorStop(1,'#163b22');c.fillStyle=g;c.fillRect(0,0,s,s);c.fillStyle='#ffd34d';c.strokeStyle='#b8860b';c.lineWidth=s*.03;c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?s*.15:s*.33;c.lineTo(s/2+Math.cos(a)*r,s*.52+Math.sin(a)*r);}c.closePath();c.fill();c.stroke();}
@@ -2235,7 +2256,7 @@ function buildIcons(){for(const [k,fn] of Object.entries(ICON_DRAW)){const cv=do
 
 /* ---------- Shell ---------- */
 const lock=$('#lock'),home=$('#home'),gameV=$('#game'),scoresV=$('#scores');
-const views={lock,home,game:gameV,scores:scoresV};
+const views={lock,home,game:gameV,scores:scoresV,settings:$('#settings')};
 const stage=$('#stage'),canvas=$('#cv'),ctx=canvas.getContext('2d'),ov=$('#overlay');
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 
@@ -2279,13 +2300,38 @@ function renderHome(){
   requestAnimationFrame(fitHome);
   $('#dots').innerHTML=pages.map((_,i)=>`<i${i===0?' class="on"':''}></i>`).join('');pageDots();
   if(challenge){const el=pg.querySelector(`.app[data-id="${META_BY[challenge.id]&&META_BY[challenge.id].retro?'retro':challenge.id}"]`);if(el){const g=el.closest('.grid');requestAnimationFrame(()=>{pg.scrollLeft=g.offsetLeft;});}}
-  $('#dock').innerHTML=`<button class="app" data-id="sound" aria-label="Sound ${soundOn?'on':'off'}"><span class="icon"><img src="${ICONS[soundOn?'sound':'mute']}" alt=""></span><span class="label">Sound ${soundOn?'On':'Off'}</span></button>`+app('scores','Scores','','')+(isStandalone()?'':app('install','Get App','',''));
+  $('#dock').innerHTML=app('settings','Settings','','')+app('scores','Scores','','')+(isStandalone()?'':app('install','Get App','',''));
 }
 let homeRows=4;
 function fitHome(){const pg=$('#pages'),g=pg&&pg.querySelector('.grid'),a=g&&g.querySelector('.app');if(!a||!pg.clientHeight)return;const cs=getComputedStyle(g),gap=parseFloat(cs.rowGap)||0,pad=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
   const rows=Math.max(3,Math.floor((pg.clientHeight-pad+gap)/(a.offsetHeight+gap)));if(rows!==homeRows){homeRows=rows;renderHome();}}
 window.addEventListener('resize',()=>{if(!home.hidden)requestAnimationFrame(fitHome);});
 function pageDots(){const pg=$('#pages'),n=pg.children.length,i=Math.round(pg.scrollLeft/Math.max(1,pg.clientWidth));[...$('#dots').children].forEach((d,k)=>d.classList.toggle('on',k===Math.min(n-1,i)));}
+/* Settings: an iPhone-style grouped list. Everything is stored on this device only. */
+const SETS=[['sound','Sound effects',()=>soundOn],['music','Music in Spike',()=>store.get('stp-music',true)],['vibe','Vibration',()=>store.get('stp-vibe',true)],['shake','Screen shake',()=>store.get('stp-shake',true)],['reduce','Reduce motion',()=>reduced]];
+function renderSettings(){const sw=(k,on)=>`<span class="sw${on?' on':''}" role="switch" aria-checked="${on}"></span>`,row=(k,l,on)=>`<li class="tap" data-set="${k}"><span class="nm">${l}</span>${sw(k,on)}</li>`;
+  const played=META.reduce((n,m)=>n+store.get('stp-plays-'+m.id,0),0),goals=META.reduce((n,m)=>n+goalsDone(m.id).length,0),totalGoals=META.reduce((n,m)=>n+(GOALS[m.id]?GOALS[m.id].length:0),0);
+  const canVibe=!!navigator.vibrate;
+  $('#setWrap').innerHTML=`<h3>Sound and feel</h3><ul class="group setg">${SETS.filter(([k])=>k!=='vibe'||canVibe).map(([k,l,f])=>row(k,l,f())).join('')}</ul>
+    <h3>The app</h3><ul class="group setg">${isStandalone()?`<li><span class="nm">Installed</span><span class="val">On your home screen</span></li>`:`<li class="tap" data-set="install"><img class="si" src="${ICONS.install}" alt=""><span class="nm">Add to your home screen</span><span class="chev">›</span></li>`}
+      <li class="tap" data-set="share"><span class="nm">Share My Old iPhone</span><span class="chev" id="shareVal">›</span></li></ul>
+    <h3>Your games</h3><ul class="group setg"><li><span class="nm">Games played</span><span class="val">${played}</span></li><li><span class="nm">Goals complete</span><span class="val">${goals} of ${totalGoals}</span></li>
+      <li class="tap danger" data-set="reset">Reset all scores and goals</li></ul><p class="note">Scores, goals and settings are saved on this device only. Nothing is uploaded.</p>
+    <h3 style="margin-top:5cqmin">About</h3><ul class="group setg"><li><span class="nm">Version</span><span class="val">1.0</span></li><li><span class="nm">Games</span><span class="val">${META.filter(m=>!m.retro).length} + ${META.filter(m=>m.retro).length} retro</span></li>
+      <li><span class="nm">Fling physics<small>Matter.js, MIT licence</small></span></li><li><span class="nm">Game font<small>Lilita One, SIL Open Font Licence</small></span></li></ul>
+    <p class="note">A fan-made tribute to the games we played on our first phones. Not affiliated with any of the original games or their makers.</p>`;}
+$('#setWrap').addEventListener('click',e=>{const li=e.target.closest('[data-set]');if(!li)return;const k=li.dataset.set;audio();
+  if(k==='sound'){soundOn=!soundOn;store.set('stp-sound',soundOn);if(soundOn)tone(880,.06,'triangle',.04);}
+  else if(k==='music')store.set('stp-music',!store.get('stp-music',true));
+  else if(k==='vibe'){const v=!store.get('stp-vibe',true);store.set('stp-vibe',v);if(v)buzz(30);}
+  else if(k==='shake')store.set('stp-shake',!store.get('stp-shake',true));
+  else if(k==='reduce'){reduced=!reduced;store.set('stp-reduce',reduced);}
+  else if(k==='install'){openInstall(false);return;}
+  else if(k==='share'){const url=SHARE_BASE,txt='My Old iPhone: the games from our first phones, free in your browser.';
+    if(navigator.share){navigator.share({title:'My Old iPhone',text:txt,url}).catch(()=>{});}else{try{navigator.clipboard.writeText(url).then(()=>{const v=$('#shareVal');if(v)v.textContent='Link copied';});}catch(err){}}return;}
+  else if(k==='reset'){if(!li.classList.contains('armed')){li.classList.add('armed');li.textContent='Tap again to erase everything';setTimeout(()=>{if(li.isConnected){li.classList.remove('armed');li.textContent='Reset all scores and goals';}},3000);return;}
+    try{for(const key of Object.keys(localStorage))if(/^stp-(best|plays|goals|spike-att)/.test(key))localStorage.removeItem(key);}catch(err){}tone(300,.15,'square',.04,-100);}
+  renderSettings();});
 function renderScores(){$('#scoreList').innerHTML=META.map(m=>{const b=getBest(m.id),k=tierOf(m.id,b),n=store.get('stp-plays-'+m.id,0);
   return `<li><img src="${ICONS[m.id]}" alt=""><span class="nm">${m.label}<small>${n} ${n===1?'play':'plays'} · ${goalsDone(m.id).length}/3 goals</small></span><i class="medal m${k}" title="${MEDAL_NAMES[k]||'No medal yet'}"></i><b>${b}</b></li>`;}).join('');
   const tot=META.reduce((a,m)=>a+goalsDone(m.id).length,0);$('#scores .foot').textContent=`${tot} of ${META.length*3} goals complete. Scores are saved in this browser.`;}
@@ -2303,6 +2349,7 @@ home.addEventListener('click',e=>{const b=e.target.closest('.app');if(!b)return;
   else if(id==='install')openInstall(false);
   else if(id==='sound'){soundOn=!soundOn;store.set('stp-sound',soundOn);renderHome();tone(880,.06,'triangle',.04);}
   else if(id==='scores'){renderScores();showView('scores','launch');}
+  else if(id==='settings'){renderSettings();showView('settings','launch');}
   else{const s=SOON.find(x=>x.id===id);if(s)showAlert(`${s.label} is coming soon`,s.line);}
 });
 document.addEventListener('click',e=>{if(e.target.closest('[data-home]'))goHome();});
