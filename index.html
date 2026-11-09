@@ -240,6 +240,12 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .group li:first-child{border-top:0}
 .group img{width:8cqmin;height:8cqmin;border-radius:22%}
 .group b{margin-left:auto;color:var(--cell-detail);font-weight:400;font-variant-numeric:tabular-nums}
+.bigshare{display:flex;align-items:center;gap:4cqmin;width:100%;margin:0 0 6cqmin;padding:4.4cqmin 5cqmin;border:1px solid #1a5fb8;border-radius:3cqmin;color:#fff;text-align:left;cursor:pointer;font:inherit;
+  background:linear-gradient(#5aa8f5 0%,#2f7fe0 50%,#1f6fd6 51%,#2a7de1 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 .6cqmin 1.4cqmin rgba(0,0,0,.25);text-shadow:0 -1px 0 rgba(0,0,0,.35)}
+.bigshare:active{filter:brightness(.88)}
+.bigshare svg{width:10cqmin;height:10cqmin;flex:none}
+.bigshare b{display:block;font-size:5.4cqmin}
+.bigshare small{display:block;font-size:3.6cqmin;font-weight:400;opacity:.9;margin-top:.6cqmin}
 .setg{margin-bottom:5cqmin}
 .setg li{min-height:7cqmin}
 .setg li.tap{cursor:pointer}.setg li.tap:active{background:#e4ecf7}
@@ -2318,9 +2324,9 @@ const SETS=[['sound','Sound effects',()=>soundOn],['music','Music in Spike',()=>
 function renderSettings(){const sw=(k,on)=>`<span class="sw${on?' on':''}" role="switch" aria-checked="${on}"></span>`,row=(k,l,on)=>`<li class="tap" data-set="${k}"><span class="nm">${l}</span>${sw(k,on)}</li>`;
   const played=META.reduce((n,m)=>n+store.get('stp-plays-'+m.id,0),0),goals=META.reduce((n,m)=>n+goalsDone(m.id).length,0),totalGoals=META.reduce((n,m)=>n+(GOALS[m.id]?GOALS[m.id].length:0),0);
   const canVibe=!!navigator.vibrate;
-  $('#setWrap').innerHTML=`<h3>Sound and feel</h3><ul class="group setg">${SETS.filter(([k])=>k!=='vibe'||canVibe).map(([k,l,f])=>row(k,l,f())).join('')}</ul>
-    <h3>The app</h3><ul class="group setg">${isStandalone()?`<li><span class="nm">Installed</span><span class="val">On your home screen</span></li>`:`<li class="tap" data-set="install"><img class="si" src="${ICONS.install}" alt=""><span class="nm">Add to your home screen</span><span class="chev">›</span></li>`}
-      <li class="tap" data-set="share"><span class="nm">Share My Old iPhone</span><span class="chev" id="shareVal">›</span></li></ul>
+  $('#setWrap').innerHTML=`<button class="bigshare" data-set="share"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span><b>Share My Old iPhone</b><small id="shareVal">Send it to a friend</small></span></button>
+    <h3>Sound and feel</h3><ul class="group setg">${SETS.filter(([k])=>k!=='vibe'||canVibe).map(([k,l,f])=>row(k,l,f())).join('')}</ul>
+    <h3>The app</h3><ul class="group setg">${isStandalone()?`<li><span class="nm">Installed</span><span class="val">On your home screen</span></li>`:`<li class="tap" data-set="install"><img class="si" src="${ICONS.install}" alt=""><span class="nm">Add to your home screen</span><span class="chev">›</span></li>`}</ul>
     <h3>Your games</h3><ul class="group setg"><li><span class="nm">Games played</span><span class="val">${played}</span></li><li><span class="nm">Goals complete</span><span class="val">${goals} of ${totalGoals}</span></li>
       <li class="tap danger" data-set="reset">Reset all scores and goals</li></ul><p class="note">Scores, goals and settings are saved on this device only. Nothing is uploaded.</p>
     <h3 style="margin-top:5cqmin">About</h3><ul class="group setg"><li><span class="nm">Version</span><span class="val">1.0</span></li><li><span class="nm">Games</span><span class="val">${META.filter(m=>!m.retro).length} + ${META.filter(m=>m.retro).length} retro</span></li>
@@ -2334,7 +2340,7 @@ $('#setWrap').addEventListener('click',e=>{const li=e.target.closest('[data-set]
   else if(k==='reduce'){reduced=!reduced;store.set('stp-reduce',reduced);}
   else if(k==='install'){openInstall(false);return;}
   else if(k==='share'){const url=SHARE_BASE,txt='My Old iPhone: the games from our first phones, free in your browser.';
-    if(navigator.share){navigator.share({title:'My Old iPhone',text:txt,url}).catch(()=>{});}else{try{navigator.clipboard.writeText(url).then(()=>{const v=$('#shareVal');if(v)v.textContent='Link copied';});}catch(err){}}return;}
+    if(navigator.share){navigator.share({title:'My Old iPhone',text:txt,url}).catch(()=>{});}else{try{navigator.clipboard.writeText(url).then(()=>{const v=$('#shareVal');if(v)v.textContent='Link copied. Paste it anywhere.';});}catch(err){}}return;}
   else if(k==='reset'){if(!li.classList.contains('armed')){li.classList.add('armed');li.textContent='Tap again to erase everything';setTimeout(()=>{if(li.isConnected){li.classList.remove('armed');li.textContent='Reset all scores and goals';}},3000);return;}
     try{for(const key of Object.keys(localStorage))if(/^stp-(best|plays|goals|spike-att)/.test(key))localStorage.removeItem(key);}catch(err){}tone(300,.15,'square',.04,-100);}
   renderSettings();});
