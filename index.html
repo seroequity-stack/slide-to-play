@@ -2310,6 +2310,7 @@ function renderHome(){
   const per=4*homeRows,pages=[];for(let i=0;i<list.length;i+=per)pages.push(list.slice(i,i+per));const pg=$('#pages'),keep=pg.scrollLeft;
   pg.innerHTML=pages.map((p,i)=>`<div class="grid"${i===0?' id="grid"':''}>${p.join('')}</div>`).join('');pg.scrollLeft=keep;
   requestAnimationFrame(fitHome);
+  pg.style.touchAction=pages.length>1?'pan-x':'none';
   $('#dots').innerHTML=pages.map((_,i)=>`<i${i===0?' class="on"':''}></i>`).join('');pageDots();
   if(challenge){const el=pg.querySelector(`.app[data-id="${META_BY[challenge.id]&&META_BY[challenge.id].retro?'retro':challenge.id}"]`);if(el){const g=el.closest('.grid');requestAnimationFrame(()=>{pg.scrollLeft=g.offsetLeft;});}}
   $('#dock').innerHTML=app('retro','Retro','',challenge&&META_BY[challenge.id]&&META_BY[challenge.id].retro?'1':'')+app('scores','Scores','','')+app('settings','Settings','','')+(isStandalone()?'':app('install','Get App','',''));
@@ -2352,6 +2353,17 @@ function showAlert(title,msg){const a=$('#alert');a.innerHTML=`<div class="card"
 $('#alert').addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.id==='alert')$('#alert').hidden=true;});
 
 $('#pages').addEventListener('scroll',pageDots,{passive:true});
+/* Rubber-band: drag the home screen sideways past its edge and it stretches a little, then springs back, like the real thing */
+(()=>{const pg=$('#pages');let st=null,moved=false;
+  const band=d=>{const D=pg.clientWidth||300;return Math.sign(d)*(1-1/(Math.abs(d)*.55/D+1))*D;};
+  pg.addEventListener('pointerdown',e=>{if(e.button>0)return;const last=pg.scrollWidth-pg.clientWidth-1;st={x:e.clientX,y:e.clientY,atL:pg.scrollLeft<=1,atR:pg.scrollLeft>=last,on:false,id:e.pointerId};moved=false;pg.style.transition='none';});
+  pg.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;
+    if(!st.on){if(Math.abs(dx)<6||Math.abs(dx)<Math.abs(dy))return;if(!((dx>0&&st.atL)||(dx<0&&st.atR)))return;st.on=true;moved=true;try{pg.setPointerCapture(e.pointerId);}catch(_){}}
+    pg.style.transform=`translateX(${band(dx)}px)`;});
+  const end=()=>{if(!st)return;st=null;pg.style.transition='transform .45s cubic-bezier(.2,.9,.3,1)';pg.style.transform='';};
+  pg.addEventListener('pointerup',end);pg.addEventListener('pointercancel',end);
+  pg.addEventListener('dragstart',e=>e.preventDefault());
+  pg.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);})();
 /* Mouse wheel and the page dots also flip pages, for computers */
 $('#pages').addEventListener('wheel',e=>{const pg=$('#pages');if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&pg.children.length>1){e.preventDefault();const i=Math.round(pg.scrollLeft/pg.clientWidth)+(e.deltaY>0?1:-1);if(!pg._wl||Date.now()-pg._wl>400){pg._wl=Date.now();pg.scrollTo({left:clamp(i,0,pg.children.length-1)*pg.clientWidth,behavior:'smooth'});}}},{passive:false});
 $('#dots').addEventListener('click',e=>{const pg=$('#pages'),d=$('#dots'),r=d.getBoundingClientRect(),n=pg.children.length;if(n<2)return;const cur=Math.round(pg.scrollLeft/pg.clientWidth);pg.scrollTo({left:((cur+1)%n)*pg.clientWidth,behavior:'smooth'});});
