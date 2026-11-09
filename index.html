@@ -1566,20 +1566,21 @@ function drawGlideBird(c,x,y,r,ang,dive,fever){c.save();c.translate(x,y);c.rotat
 const Glide={
   hint:'Hold to dive down the hills, let go to fly off the tops. Land smoothly on a downslope for a speed boost. Reach the next island before the sun sets.',
   reset(){const u=this.u=H/400;this.kp=[{x:-W*2,y:H*.6}];this.gen(W*4);
-    this.b={x:0,y:this.h(0)-17*u,vx:260*u,vy:0,r:17*u};this.hold=false;this.air=false;this.airT=0;this.t=0;this.time=45;this.island=1;this.nextIsland=9000*u;this.starts=[];
+    this.b={x:0,y:this.h(0)-17*u,vx:340*u,vy:0,r:17*u};this.hold=false;this.air=false;this.airT=0;this.t=0;this.time=45;this.island=1;this.nextIsland=9000*u;this.starts=[];
     this.sc=1;this.dead=null;this.started=false;this.streak=0;this.fever=0;this.trail=[];},
   gen(upTo){const u=this.u;while(this.kp[this.kp.length-1].x<upTo){const n=this.kp.length,last=this.kp[n-1],hard=Math.min(1,Math.max(0,last.x)/(40000*u));
-      const dx=(200+R()*170)*u*(1+hard*.6),amp=H*(.13+.13*hard),base=H*.6,y=n%2?base-amp*(.55+R()*.45):base+amp*(.25+R()*.45);this.kp.push({x:last.x+dx,y:Math.min(H*.93,y)});}},
+      const dx=(260+R()*160)*u*(1+hard*.5),amp=H*(.25+.1*hard),base=H*.62,y=n%2?base-amp*(.6+R()*.4):base+amp*(.35+R()*.4);this.kp.push({x:last.x+dx,y:Math.min(H*.93,y)});}},
   seg(x){const k=this.kp;let lo=0,hi=k.length-2;while(lo<hi){const m=(lo+hi+1)>>1;if(k[m].x<=x)lo=m;else hi=m-1;}return lo;},
   h(x){const i=this.seg(x),a=this.kp[i],b=this.kp[i+1];if(!b)return a.y;const t=clamp((x-a.x)/(b.x-a.x),0,1);return a.y+(b.y-a.y)*(1-Math.cos(Math.PI*t))/2;},
   slope(x){const i=this.seg(x),a=this.kp[i],b=this.kp[i+1];if(!b)return 0;const t=clamp((x-a.x)/(b.x-a.x),0,1);return(b.y-a.y)*Math.PI/2*Math.sin(Math.PI*t)/(b.x-a.x);},
   update(dt){const u=this.u,b=this.b;this.t+=dt;this.started=true;if(this.dead)return this.idle(dt);
     this.time-=dt;if(this.time<=0){this.time=0;return this.die();}
-    b.vy+=(this.hold?2300:750)*u*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+    /* Light when you let go (so you launch off the hilltops and float), heavy when you hold (so you dive and build speed) */
+    b.vy+=(this.hold?2600:450)*u*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
     const gy=this.h(b.x)-b.r;
     if(b.y>=gy){const s=this.slope(b.x),a=Math.atan(s),ca=Math.cos(a),sa=Math.sin(a);
       if(this.air){const diff=Math.abs(Math.atan2(b.vy,b.vx)-a);
-        if(s>.05&&diff<.32&&this.airT>.35){this.streak++;api.stat('slides');b.vx*=1.1;b.vy*=1.1;api.pop(W*.4,H*.3,this.streak>1?`Great slide x${this.streak}`:'Great slide!','#fff',.9);tone(700+this.streak*80,.08,'triangle',.04,200);
+        if(s>.05&&diff<.45&&this.airT>.35){this.streak++;api.stat('slides');b.vx*=1.15;b.vy*=1.15;api.pop(W*.4,H*.3,this.streak>1?`Great slide x${this.streak}`:'Great slide!','#fff',.9);tone(700+this.streak*80,.08,'triangle',.04,200);
           if(this.streak>=3&&this.fever<=0){this.fever=5;api.pop(W/2,H*.2,'Fever!','#ffd23f',1.4);tone(880,.1,'square',.04);setTimeout(()=>tone(1320,.15,'square',.04),90);buzz(25);}}
         else if(diff>.6){this.streak=0;tone(180,.08,'square',.03);}
         this.air=false;}
