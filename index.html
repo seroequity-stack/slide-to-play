@@ -281,6 +281,17 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
   .cam,.speaker,.home-btn{display:none}
   .screen{border-radius:20px}
 }
+/* Phone turned sideways: use every pixel of height. No margins, no fake status bar, a slimmer top bar, and size to the visible area (not the area behind the browser bars) */
+@media (max-height:520px) and (orientation:landscape){
+  html,body{height:100%;height:100dvh}
+  body{padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+  .screen{border-radius:0}
+  .status{display:none}
+  .navbar{height:8.5cqmin}
+  .navbar h1{font-size:4.2cqmin}
+  .back{height:6.2cqmin;font-size:3.2cqmin}
+  .pause{width:6.2cqmin;height:6.2cqmin}
+}
 </style>
 </head>
 <body>
