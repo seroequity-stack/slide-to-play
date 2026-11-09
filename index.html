@@ -49,7 +49,7 @@ body{height:100%;margin:0;container-type:size;display:grid;place-items:center;pa
 button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer}
 
 /* Handset */
-.device{position:relative;display:flex;flex-direction:column;height:min(1200px,100%);aspect-ratio:.5125;max-width:100%;padding:13% 3.2% 16%;border-radius:12% / 6.2%;background:linear-gradient(150deg,#2a2b30 0%,var(--bezel) 38%,#18191d 100%);box-shadow:0 0 0 2px var(--rim),0 0 0 4px #3b3c42,0 0 0 5px #0b0b0d,0 40px 80px rgba(0,0,0,.65)}
+.device{position:relative;display:flex;flex-direction:column;height:min(1200px,100%);aspect-ratio:.5125;max-width:100%;--dh:min(1200px,100cqh);padding:calc(var(--dh)*.0666) calc(var(--dh)*.0164) calc(var(--dh)*.082);border-radius:12% / 6.2%;background:linear-gradient(150deg,#2a2b30 0%,var(--bezel) 38%,#18191d 100%);box-shadow:0 0 0 2px var(--rim),0 0 0 4px #3b3c42,0 0 0 5px #0b0b0d,0 40px 80px rgba(0,0,0,.65)}
 .cam{position:absolute;left:37%;top:0;width:2.2%;aspect-ratio:1;margin-top:5.6%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a4a66,#07080c 70%)}
 .speaker{position:absolute;left:50%;top:0;width:14%;aspect-ratio:9;margin-top:5.8%;transform:translateX(-50%);border-radius:99px;background:#1b1c20;box-shadow:inset 0 1px 2px #000,0 1px 0 rgba(255,255,255,.08)}
 .home-btn{position:absolute;left:50%;bottom:0;width:12%;aspect-ratio:1;transform:translate(-50%,-17%);border-radius:50%;background:radial-gradient(circle at 50% 40%,#1d1e22,#0a0a0c 75%);box-shadow:inset 0 0 0 1.5px #2c2d32,inset 0 3px 6px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07)}
@@ -251,7 +251,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 }
 
 /* Sideways games: the handset turns landscape */
-.device.land{height:auto;width:min(100%,195.1cqh,2340px);aspect-ratio:1.951;padding:1.64% 8.2% 1.64% 6.66%;border-radius:6.2% / 12%}
+.device.land{height:auto;--dw:min(100cqw,195.1cqh,2340px);width:var(--dw);aspect-ratio:1.951;padding:calc(var(--dw)*.0164) calc(var(--dw)*.082) calc(var(--dw)*.0164) calc(var(--dw)*.0666);border-radius:6.2% / 12%}
 .device.land .cam{left:3.33%;top:37%;margin:0;width:1.1%;transform:translate(-50%,-50%)}
 .device.land .speaker{left:3.33%;top:50%;margin:0;width:auto;height:14%;aspect-ratio:1/9;transform:translate(-50%,-50%)}
 .device.land .home-btn{left:auto;right:1%;bottom:auto;top:50%;width:auto;height:12%;transform:translateY(-50%)}
