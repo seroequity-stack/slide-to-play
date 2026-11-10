@@ -1912,7 +1912,7 @@ function drawClimber(c,x,y,s,face,ang,run){c.save();c.translate(x,y-s*.55);c.rot
   c.fillStyle='#3d7be0';c.beginPath();c.arc(0,-s*.36,s*.23,Math.PI,0);c.fill();c.fillRect(-s*.24,-s*.38,s*.48,s*.07);c.beginPath();c.arc(0,-s*.6,s*.07,0,TAU);c.fillStyle='#fff';c.fill();
   c.fillStyle='#1a1a1a';c.fillRect(s*.06,-s*.32,s*.06,s*.07);c.fillRect(s*.16,-s*.32,s*.05,s*.07);c.restore();}
 const Tower={
-  hint:'Hold your thumb down and nudge it left or right to run; a tiny nudge back turns you round. You jump each time you land, and the faster you run the higher you go. Hit a wall mid-air to bounce back at full speed. Skip floors for combos. Keyboard: arrows and space.',
+  hint:'Keep your thumb down to keep jumping, and nudge it left or right to run; a tiny nudge back turns you round. Lift your thumb to stop jumping and land. The faster you run the higher you go. Hit a wall mid-air to bounce back at full speed. Skip floors for combos. Keyboard: arrows and space.',
   reset(){const u=this.u=H/640;this.FS=78*u;this.wall=26*u;this.F0=H-30*u;this.plats={};this.p={x:W/2,y:this.F0,vx:0,vy:0,ground:true,floor:0,face:1,ang:0,spin:0,run:0};
     this.cam=0;this.scroll=false;this.st=0;this.lvl=0;this.maxF=0;this.bonus=0;this.combo=null;this.dir=0;this.keys={l:0,r:0};this.jumpKey=false;this.bounceT=0;this.anchor=null;this.t=0;this.dead=false;this.stars=[];this.gen(30);},
   topOf(n){return this.F0-n*this.FS;},
@@ -1936,7 +1936,8 @@ const Tower={
     const MAX=540*u,turning=dir&&p.vx&&Math.sign(p.vx)!==dir,acc=(turning?(p.ground?3200:2200):(p.ground?1700:1250))*u;
     if(dir){p.vx+=dir*acc*dt;p.face=dir;}else if(p.ground){const f=1700*u*dt;p.vx=Math.abs(p.vx)<=f?0:p.vx-Math.sign(p.vx)*f;}
     p.vx=clamp(p.vx,-MAX,MAX);
-    if(p.ground&&(this.auto||this.jumpKey)){const v0=740*u+Math.abs(p.vx)*1.2;p.vy=-v0;p.ground=false;p.spin=v0>1260*u?(p.face||1):0;tone(380+Math.abs(p.vx)/u*.6,.07,'triangle',.035,200);}
+    this.jbuf=Math.max(0,(this.jbuf||0)-dt);
+    if(p.ground&&(this.auto||this.jumpKey||this.jbuf>0)){this.jbuf=0;const v0=740*u+Math.abs(p.vx)*1.2;p.vy=-v0;p.ground=false;p.spin=v0>1260*u?(p.face||1):0;tone(380+Math.abs(p.vx)/u*.6,.07,'triangle',.035,200);}
     const y0=p.y;if(p.ground){p.vy=0;p.y=this.topOf(p.floor);}else{p.vy+=2300*u*dt;p.y+=p.vy*dt;}p.x+=p.vx*dt;p.run+=Math.abs(p.vx)*dt*.05;
     const hw=11*u,L=this.wall+hw,Rw=W-this.wall-hw;
     /* Wall bounce: keep all your speed, and your thumb's direction flips with you so you don't brake against it */
@@ -1958,13 +1959,13 @@ const Tower={
   idle(dt){this.t+=dt;for(const s of this.stars){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;}this.stars=this.stars.filter(s=>s.life>0);},
   start(){this.auto=false;},
   /* Touch: put your thumb down (left or right half picks the first direction), then small nudges steer; the anchor follows your thumb so a short move back reverses at once */
-  down(x){this.auto=true;this.anchor=x;this.lastX=x;this.dir=x<W/2?-1:1;},
+  down(x){this.auto=true;this.jbuf=.15;this.anchor=x;this.lastX=x;this.dir=x<W/2?-1:1;},
   move(x,y,pressed){if(!pressed||this.anchor==null)return;this.lastX=x;const u=this.u,dx=x-this.anchor,dead=10*u,span=26*u;
     if(dx>dead)this.dir=1;else if(dx<-dead)this.dir=-1;if(dx>span)this.anchor=x-span;if(dx<-span)this.anchor=x+span;},
-  up(){this.dir=0;this.anchor=null;},
-  key(k,isDown){const d=isDown!==false;if(k==='ArrowLeft'||k==='a'){this.keys.l=d?1:0;return true;}if(k==='ArrowRight'||k==='d'){this.keys.r=d?1:0;return true;}if(k===' '||k==='ArrowUp'||k==='w'){this.jumpKey=d;this.auto=false;return true;}},
+  up(){this.dir=0;this.anchor=null;this.auto=false;},
+  key(k,isDown){const d=isDown!==false;if(k==='ArrowLeft'||k==='a'){this.keys.l=d?1:0;return true;}if(k==='ArrowRight'||k==='d'){this.keys.r=d?1:0;return true;}if(k===' '||k==='ArrowUp'||k==='w'){this.jumpKey=d;if(d)this.jbuf=.15;return true;}},
   keyUp(k){this.key(k,false);},
-  onResume(){this.dir=0;this.anchor=null;this.keys={l:0,r:0};this.jumpKey=false;},
+  onResume(){this.dir=0;this.anchor=null;this.auto=false;this.keys={l:0,r:0};this.jumpKey=false;},
   draw(c){const u=this.u,p=this.p,cam=this.cam,th=TOWER_TH[Math.floor(this.maxF/100)%TOWER_TH.length];
     const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2b3a67');g.addColorStop(1,'#5a4a8a');c.fillStyle=g;c.fillRect(0,0,W,H);
     /* Back wall bricks, scrolling slower for depth */
