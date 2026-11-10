@@ -2109,7 +2109,7 @@ const Fling={
   hits(e){for(const pr of e.pairs){const A=pr.bodyA,B=pr.bodyB,rel=Math.hypot(A.velocity.x-B.velocity.x,A.velocity.y-B.velocity.y);if(rel<2)continue;
       for(const [X,Y] of [[A,B],[B,A]]){const p=X.plugin;if(!p||(p.kind!=='block'&&p.kind!=='target'))continue;const ratio=Y.isStatic?1.2:clamp(Y.mass/X.mass,.25,3),bird=Y.plugin&&Y.plugin.kind==='bird'?1.6:1;
         p.hp-=(rel-2)*ratio*bird*(p.mat==='i'&&Y.plugin&&Y.plugin.kind==='bird'&&Y.plugin.k==='b'?3:1)*(p.mat==='w'&&Y.plugin&&Y.plugin.k==='y'?2:1);if(p.hp<=0)p.dying=true;}}},
-  kill(b){const p=b.plugin,M=Matter;M.Composite.remove(this.world,b);const sc=this.sc||1;
+  kill(b){const p=b.plugin,M=Matter;M.Composite.remove(this.world,b);this.wakeT=1.5;for(const o of this.world.bodies)if(o.isSleeping)M.Sleeping.set(o,false);const sc=this.sc||1;
     if(p.kind==='target'){this.targets--;api.add(5000);api.stat('targets');this.pops.push({x:b.position.x,y:b.position.y-30,txt:'5000',t:0,col:'#d6b8ff'});noise(.25,.06,800);tone(700,.15,'square',.04,-400);
       for(let i=0;i<14;i++)this.parts.push({x:b.position.x,y:b.position.y,vx:fx(-5,5),vy:fx(-7,1),life:fx(.5,1),s:fx(4,9),c:'rgba(255,255,255,.9)',round:true});}
     else{const pts=p.mat==='s'?800:p.mat==='w'?500:300;api.add(pts);this.pops.push({x:b.position.x,y:b.position.y-10,txt:String(pts),t:0,col:'#fff'});noise(.12,.05,p.mat==='i'?3000:p.mat==='s'?500:1200);
@@ -2127,6 +2127,8 @@ const Fling={
     for(const o of this.bodies()){if(o.isStatic)continue;const dx=o.position.x-x,dy=o.position.y-y,d=Math.hypot(dx,dy);if(d>190)continue;const f=(1-d/190);M.Sleeping.set(o,false);M.Body.setVelocity(o,{x:o.velocity.x+dx/(d||1)*f*16,y:o.velocity.y+dy/(d||1)*f*16-f*4});if(o.plugin&&o.plugin.hp!=null){o.plugin.hp-=f*14;if(o.plugin.hp<=0)o.plugin.dying=true;}}
     for(let i=0;i<30;i++)this.parts.push({x,y,vx:fx(-9,9),vy:fx(-9,9),life:fx(.3,.7),s:fx(6,14),c:i%2?'#ffb347':'#ffe066',round:true});noise(.6,.12,200);buzz(40);api.stat('boom');},
   update(dt){const M=Matter;this.t+=dt;this.layout();this.banner=Math.max(0,this.banner-dt);
+    /* While a shot is playing out, nothing is allowed to doze off: otherwise a piece resting on a block that just broke would hang in mid-air */
+    if(this.phase!=='ready'||this.wakeT>0){this.wakeT=Math.max(0,(this.wakeT||0)-dt);for(const b of this.world.bodies)if(b.isSleeping)M.Sleeping.set(b,false);}
     this.acc+=Math.min(dt,.05);while(this.acc>=1/60){M.Engine.update(this.eng,1000/60);this.acc-=1/60;
       for(const b of this.bodies()){const p=b.plugin;if(!p||!p.kind)continue;if(p.dying||((p.kind==='target'||p.kind==='block')&&(b.position.y>this.GY+200||b.position.x>this.WW+300||b.position.x<-300)))this.kill(b);}}
     if(this.bird&&this.flying.length)for(const f of this.flying)if(f.plugin.kind==='bird'&&this.world.bodies.includes(f)&&(this.t*30|0)%1===0)this.trail.push({x:f.position.x,y:f.position.y});if(this.trail.length>400)this.trail.splice(0,this.trail.length-400);
